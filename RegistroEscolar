@@ -1,0 +1,84 @@
+CREATE OR REPLACE PROCEDURE obter_estudante_por_idade(idade_param int)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DROP TABLE IF EXISTS resultados;
+    CREATE TEMP TABLE resultados AS
+    SELECT * FROM estudante WHERE idade = idade_param;
+END;
+$$;
+
+
+CALL obter_estudante_por_idade('16');
+SELECT * FROM resultados;
+
+////
+
+CREATE OR REPLACE PROCEDURE obter_estudantes_por_endereco(cod_endereco_param bigint)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DROP TABLE IF EXISTS resultados;
+    CREATE TEMP TABLE resultados AS
+    SELECT * FROM estudante WHERE fk_endereco_cod = cod_endereco_param;
+END;
+$$;
+
+CALL obter_estudantes_por_endereco('1');
+SELECT * FROM resultados;
+
+////
+
+CREATE OR REPLACE PROCEDURE obter_responsavel_por_matricula(matricula_param int)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    responsavel_id bigint;
+BEGIN
+    SELECT fk_responsavel_cod INTO responsavel_id FROM responde WHERE fk_estudante_cod = matricula_param;
+    
+    DROP TABLE IF EXISTS resultados;
+    CREATE TEMP TABLE resultados AS
+    SELECT nome FROM responsavel WHERE cod = responsavel_id;
+END;
+$$;
+
+CALL obter_responsavel_por_matricula('1');
+SELECT * FROM resultados;
+
+////
+
+CREATE OR REPLACE PROCEDURE obter_estudantes_por_turma(turma_nome text)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DROP TABLE IF EXISTS resultados;
+    CREATE TEMP TABLE resultados AS
+    SELECT * FROM estudante WHERE turma = turma_nome;
+END;
+$$;
+
+
+CALL obter_estudantes_por_turma('1B');
+SELECT * FROM resultados;
+
+///
+
+CREATE OR REPLACE PROCEDURE obter_endereco_do_responsavel(nome_completo text)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    responsavel_id bigint;
+    endereco_id bigint;
+BEGIN
+    SELECT cod INTO responsavel_id FROM responsavel WHERE nome = nome_completo;
+    SELECT fk_endereco_cod INTO endereco_id FROM estudante WHERE cod = (SELECT fk_estudante_cod FROM responde WHERE fk_responsavel_cod = responsavel_id);
+    
+    DROP TABLE IF EXISTS resultados;
+    CREATE TEMP TABLE resultados AS
+    SELECT * FROM endereco WHERE cod = endereco_id;
+END;
+$$;
+
+CALL obter_endereco_do_responsavel('Gladstone da Silva');
+SELECT * FROM resultados;
